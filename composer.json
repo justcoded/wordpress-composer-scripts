@@ -1,0 +1,35 @@
+{
+	"name": "justcoded/wordpress-composer-scripts",
+	"type": "project",
+	"license": "MIT",
+	"description": "Composer scripts for WordPress installation",
+	"authors": [
+		{
+			"name": "Alex Prokopenko",
+			"email": "aprokopenko@justcoded.com",
+			"homepage": "https://github.com/justcoded"
+		}
+	],
+	"keywords": [
+		"composer scripts",
+		"justcoded",
+		"wordpress",
+		"stack",
+		"composer",
+		"wp"
+	],
+	"support": {
+		"issues": "https://github.com/justcoded/wordpress-composer-scripts/issues"
+	},
+	"config": {
+		"preferred-install": "dist"
+	},
+	"require": {
+		"php": ">=7.0"
+	},
+  "autoload": {
+    "psr-4": {
+      "JustCoded\\WordPress\\Composer\\": "src/"
+    }
+  }
+}
