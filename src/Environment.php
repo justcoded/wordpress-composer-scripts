@@ -1,6 +1,6 @@
 <?php
 
-namespace JustCoded\WordPress\Composer;
+namespace Just_Coded\Word_Press\Composer;
 
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
