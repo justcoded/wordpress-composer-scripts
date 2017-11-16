@@ -1,6 +1,6 @@
 <?php
 
-namespace Just_Coded\Word_Press\Composer;
+namespace JustCoded\WP\Composer;
 
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
@@ -95,6 +95,16 @@ class Environment {
 				&& $io->write( "\t.env.example has been updated." );
 		static::update_file( $io, "$root_dir/.env", $replace, false )
 				&& $io->write( "\t.env has been updated." );
+	}
+
+
+	/**
+	 * Change theme after install
+	 *
+	 * @param Event $event Composer script event object.
+	 */
+	public static function theme( Event $event ) {
+
 	}
 
 	/**
