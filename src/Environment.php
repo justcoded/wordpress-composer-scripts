@@ -97,16 +97,6 @@ class Environment {
 				&& $io->write( "\t.env has been updated." );
 	}
 
-
-	/**
-	 * Change theme after install
-	 *
-	 * @param Event $event Composer script event object.
-	 */
-	public static function theme( Event $event ) {
-
-	}
-
 	/**
 	 * Replace some lines based on patterns inside some file and write new content ro disk
 	 *
