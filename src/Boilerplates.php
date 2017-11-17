@@ -5,38 +5,58 @@ namespace JustCoded\WP\Composer;
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
 
+/**
+ * Class Boilerplates
+ *
+ * @package JustCoded\WP\Composer
+ */
 class Boilerplates {
 
 	/**
-	 *  Arguments array
-	 * @var $args
+	 * Replacement in theme variables
+	 * @var array
 	 */
-	public static $args = array();
+	public static $replacement = array();
 
 
 	/**
+	 * Initial function
 	 * @param Event $event
-	 *
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
 		$io = $event->getIO();
+		$theme_title = str_replace( 't=', '', $event->getArguments()[1] );
+		$name_space = str_replace( 'ns=', '', $event->getArguments()[2] );
+		$name_space = str_replace( ' ', '', $name_space );
 
-		$theme_name = str_replace( 't=', '', $event->getArguments()[1] );
-		$theme_slug = str_replace( ' ', '', $theme_name );
-		$theme_dir  = str_replace( ' ', '', $event->getArguments()[0] );
-		if ( empty( $theme_dir ) ) {
-			$theme_dir = 'wp-content/themes';
+		if ( isset( $event->getArguments()[3] ) ) {
+			$path_to_theme_directory = str_replace( 'd=', '', $event->getArguments()[3] );
+		} else {
+			$path_to_theme_directory = '';
+		}
+		$silent_installation = false;
+		if ( isset( $event->getArguments()[4] ) ) {
+			$silent_installation = true;
 		}
 
-		$src  = 'vendor/justcoded/wordpress-theme-boilerplate';
-		$dst  = $theme_dir . '/' . $theme_slug;
-		self::$args = array(
-			'full_path_to_new_theme' => $dst,
-			'theme_slug'             => $theme_slug,
-			'theme_name'             => $theme_name,
-		);
+		$theme_dir  = strtolower( str_replace( ' ', '', $event->getArguments()[0] ) );
+		$theme_slug = str_replace( '-', '', $theme_dir );
+		if ( empty( $theme_dir ) ) {
+			$theme_dir = 'default';
+		}
+		if ( '' !== $path_to_theme_directory ) {
+			$dst = $path_to_theme_directory . '/' . $theme_dir;
+		} else {
+			$dst = 'wp-content/themes/' . $theme_dir;
+		}
 
+		$src  = 'vendor/wordpress-theme-boilerplate';
+		self::$replacement = array(
+			'_jmvt_name' => $theme_title,
+			'_jmvt' => $theme_slug,
+			'Boilerplate' => ucfirst( $name_space ),
+		);
 		if ( is_dir( $src ) ) {
 			$dir = opendir( $src );
 			if ( ! is_dir( $dst ) ) {
@@ -46,10 +66,12 @@ class Boilerplates {
 					return false;
 				}
 			}
-
 			self::recurse_copy( $src, $dst );
-		}
 
+			foreach ( self::$replacement as $str_to_find => $str_to_replace ) {
+				self::search_and_replace( $dst, $str_to_find, $str_to_replace );
+			}
+		}
 	}
 
 
@@ -61,9 +83,7 @@ class Boilerplates {
 		$dir = opendir( $src );
 		@mkdir( $dst );
 		while ( false !== ( $file = readdir( $dir ) ) ) {
-//			if ( false == ( $file = readdir( $dir ) ) ) {
-//				self::renaming_files_scripts();
-//			}
+
 			if ( ( '.' !== $file ) && ( '..' !== $file ) ) {
 				if ( is_dir( $src . '/' . $file ) ) {
 					self::recurse_copy( $src . '/' . $file, $dst . '/' . $file );
@@ -72,28 +92,56 @@ class Boilerplates {
 				}
 			}
 		}
+
 		closedir( $dir );
 	}
 
 
-//	/**
-//	 * @param: root folder to renaming files $dest
-//	 */
-//	public static function renaming_files_scripts() {
-//
-//		$args = self::$args;
-//		$dest       = $args['full_path_to_new_theme'];
-//		$theme_slug = $args['theme_slug'];
-//		foreach ( glob( $dest . '/*.php' ) as $filename ) {
-//			$file = file_get_contents( $filename );
-//			file_put_contents(
-//				$filename,
-//				preg_replace(
-//					"/(Boilerplate)/",
-//					ucfirst( $theme_slug ), $file
-//				)
-//			);
-//		}
-//	}
+	/**
+	 * @param $dir
+	 * @param $stringsearch
+	 * @param $stringreplace
+	 *
+	 * @return array
+	 */
+	public static function search_and_replace( $dir, $stringsearch, $stringreplace ) {
+
+		$listDir = array();
+		if ( $handler = opendir( $dir ) ) {
+			while ( ( $sub = readdir( $handler ) ) !== false ) {
+				if ( $sub != "." && $sub != ".." && $sub != "Thumb.db" ) {
+					if ( is_file( $dir . "/" . $sub ) ) {
+						if ( substr_count( $sub, '.php' ) || substr_count( $sub, '.css' ) ) {
+							$getfilecontents = file_get_contents( $dir . "/" . $sub );
+							if ( substr_count( $getfilecontents, $stringsearch ) > 0 ) {
+								$replacer = str_replace( $stringsearch, $stringreplace, $getfilecontents );
+								// Let's make sure the file exists and is writable first.
+								if ( is_writable( $dir . "/" . $sub ) ) {
+									if ( ! $handle = fopen( $dir . "/" . $sub, 'w' ) ) {
+										echo "Cannot open file (" . $dir . "/" . $sub . ")";
+										exit;
+									}
+									// Write $somecontent to our opened file.
+									if ( fwrite( $handle, $replacer ) === false ) {
+										echo "Cannot write to file (" . $dir . "/" . $sub . ")";
+										exit;
+									}
+									fclose( $handle );
+								}
+							}
+						}
+						$listDir[] = $sub;
+					} elseif ( is_dir( $dir . "/" . $sub ) ) {
+						$listDir[ $sub ] = self::search_and_replace( $dir . "/" . $sub, $stringsearch, $stringreplace );
+					}
+				}
+			}
+			closedir( $handler );
+		}
+
+		return $listDir;
+	}
+
+
 
 }
