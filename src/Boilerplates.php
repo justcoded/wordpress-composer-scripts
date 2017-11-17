@@ -14,21 +14,23 @@ class Boilerplates {
 
 	/**
 	 * Replacement in theme variables
+	 *
 	 * @var array
 	 */
 	public static $replacement = array();
 
 
 	/**
-	 * Initial function
+	 * Initial function for theme installation
+	 *
 	 * @param Event $event
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
-		$io = $event->getIO();
+		$io          = $event->getIO();
 		$theme_title = str_replace( 't=', '', $event->getArguments()[1] );
-		$name_space = str_replace( 'ns=', '', $event->getArguments()[2] );
-		$name_space = str_replace( ' ', '', $name_space );
+		$name_space  = str_replace( 'ns=', '', $event->getArguments()[2] );
+		$name_space  = str_replace( ' ', '', ucfirst( $name_space ) );
 
 		if ( isset( $event->getArguments()[3] ) ) {
 			$path_to_theme_directory = str_replace( 'd=', '', $event->getArguments()[3] );
@@ -51,26 +53,40 @@ class Boilerplates {
 			$dst = 'wp-content/themes/' . $theme_dir;
 		}
 
-		$src  = 'vendor/wordpress-theme-boilerplate';
-		self::$replacement = array(
-			'_jmvt_name' => $theme_title,
-			'_jmvt' => $theme_slug,
-			'Boilerplate' => ucfirst( $name_space ),
-		);
-		if ( is_dir( $src ) ) {
-			$dir = opendir( $src );
-			if ( ! is_dir( $dst ) ) {
-				if ( ! mkdir( $dst, 0777, true ) ) {
-					$io->write( "\n ERROR. Unable to create directory $theme_dir" );
+		$answer = '';
+		if ( false === $silent_installation ) {
+			$question = 'You creating project "'
+			            . ucfirst( $theme_title )
+			            . '" on path "' . $dst
+			            . '" with namespace "' . $name_space
+			            . '" do you agree ? (yes/no)';
+			$answer = $event->getIO()->ask( $question );
+		}
 
-					return false;
+		if ( 'yes' === strtolower( $answer ) || 'y' === strtolower( $answer ) || '' === $answer ) {
+			$src               = 'vendor/wordpress-theme-boilerplate';
+			self::$replacement = array(
+				'_jmvt_name'  => $theme_title,
+				'_jmvt'       => $theme_slug,
+				'Boilerplate' => $name_space,
+			);
+			if ( is_dir( $src ) ) {
+				$dir = opendir( $src );
+				if ( ! is_dir( $dst ) ) {
+					if ( ! mkdir( $dst, 0777, true ) ) {
+						$io->write( "\n ERROR. Unable to create directory $theme_dir" );
+
+						return false;
+					}
+				}
+				self::recurse_copy( $src, $dst );
+
+				foreach ( self::$replacement as $str_to_find => $str_to_replace ) {
+					self::search_and_replace( $dst, $str_to_find, $str_to_replace );
 				}
 			}
-			self::recurse_copy( $src, $dst );
-
-			foreach ( self::$replacement as $str_to_find => $str_to_replace ) {
-				self::search_and_replace( $dst, $str_to_find, $str_to_replace );
-			}
+		} else {
+			exit();
 		}
 	}
 
@@ -141,7 +157,6 @@ class Boilerplates {
 
 		return $listDir;
 	}
-
 
 
 }
