@@ -5,6 +5,7 @@ namespace JustCoded\WP\Composer;
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
 
+
 /**
  * Class Boilerplates
  *
@@ -28,22 +29,15 @@ class Boilerplates {
 	 */
 	public static function theme( Event $event ) {
 		$io          = $event->getIO();
-		$theme_title = str_replace( 't=', '', $event->getArguments()[1] );
-		$name_space  = str_replace( 'ns=', '', $event->getArguments()[2] );
+		$arguments = $event->getArguments();
+		$args_ready = CustomComposerHelper::arguments_cleaner( $arguments );
+
+		$theme_title = $args_ready['title'];
+		$name_space  = $args_ready['namespace'];
 		$name_space  = str_replace( ' ', '', ucfirst( $name_space ) );
+		$path_to_theme_directory = $args_ready['dir'];
 
-		if ( isset( $event->getArguments()[3] ) ) {
-			$path_to_theme_directory = str_replace( 'd=', '', $event->getArguments()[3] );
-		} else {
-			$path_to_theme_directory = '';
-		}
-		$silent_installation = false;
-		if ( isset( $event->getArguments()[4] ) ) {
-			$silent_installation = true;
-		}
-
-		$theme_dir  = strtolower( str_replace( ' ', '', $event->getArguments()[0] ) );
-		$theme_slug = str_replace( '-', '', $theme_dir );
+		$theme_dir  = $args_ready['theme_slug'];
 		if ( empty( $theme_dir ) ) {
 			$theme_dir = 'default';
 		}
@@ -54,7 +48,7 @@ class Boilerplates {
 		}
 
 		$answer = '';
-		if ( false === $silent_installation ) {
+		if ( false === $args_ready['silent'] ) {
 			$question = 'You creating project "'
 			            . ucfirst( $theme_title )
 			            . '" on path "' . $dst
@@ -67,19 +61,12 @@ class Boilerplates {
 			$src               = 'vendor/wordpress-theme-boilerplate';
 			self::$replacement = array(
 				'_jmvt_name'  => $theme_title,
-				'_jmvt'       => $theme_slug,
+				'_jmvt'       => $args_ready['theme_slug'],
 				'Boilerplate' => $name_space,
 			);
 			if ( is_dir( $src ) ) {
 				$dir = opendir( $src );
-				if ( ! is_dir( $dst ) ) {
-					if ( ! mkdir( $dst, 0777, true ) ) {
-						$io->write( "\n ERROR. Unable to create directory $theme_dir" );
-
-						return false;
-					}
-				}
-				self::recurse_copy( $src, $dst );
+				self::recursive_copy( $src, $dst );
 
 				foreach ( self::$replacement as $str_to_find => $str_to_replace ) {
 					self::search_and_replace( $dst, $str_to_find, $str_to_replace );
@@ -95,14 +82,14 @@ class Boilerplates {
 	 * @param: source folder $src
 	 * @param: destination folder $dst
 	 */
-	public static function recurse_copy( $src, $dst ) {
+	public static function recursive_copy( $src, $dst ) {
 		$dir = opendir( $src );
 		@mkdir( $dst );
 		while ( false !== ( $file = readdir( $dir ) ) ) {
 
 			if ( ( '.' !== $file ) && ( '..' !== $file ) ) {
 				if ( is_dir( $src . '/' . $file ) ) {
-					self::recurse_copy( $src . '/' . $file, $dst . '/' . $file );
+					self::recursive_copy( $src . '/' . $file, $dst . '/' . $file );
 				} else {
 					copy( $src . '/' . $file, $dst . '/' . $file );
 				}
