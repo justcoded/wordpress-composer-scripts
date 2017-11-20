@@ -44,6 +44,7 @@ class CustomComposerHelper {
 				if ( '-s' === $one_arg_pair[0] ) {
 					$args_ready['silent'] = true;
 				} else {
+					$args_ready['silent'] = false;
 					$args_ready['theme_slug'] = $one_arg_pair[0];
 				}
 			}

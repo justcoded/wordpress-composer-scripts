@@ -37,7 +37,7 @@ class Boilerplates {
 			$dst = 'wp-content/themes/' . $theme_dir;
 		}
 		$answer = '';
-		if ( false === $args_ready['silent'] ) {
+		if ( isset( $args_ready['silent'] ) && false === $args_ready['silent'] ) {
 			$question = 'You creating project "'
 			            . ucfirst( $theme_title )
 			            . '" on path "' . $dst
@@ -59,6 +59,7 @@ class Boilerplates {
 					CustomComposerHelper::search_and_replace( $dst, $str_to_find, $str_to_replace );
 				}
 			}
+			$event->getIO()->write( 'The task has been created!' );
 		} else {
 			exit();
 		}
