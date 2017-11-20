@@ -21,22 +21,23 @@ class Boilerplates {
 	 */
 	public static function theme( Event $event ) {
 		$io          = $event->getIO();
+		// Get arguments from composer command line.
 		$arguments = $event->getArguments();
+		// Parse arguments.
 		$args_ready = CustomComposerHelper::arguments_cleaner( $arguments );
 		$theme_title = $args_ready['title'];
 		$name_space  = $args_ready['namespace'];
 		$name_space  = str_replace( ' ', '', ucfirst( $name_space ) );
 		$path_to_theme_directory = $args_ready['dir'];
+		// Get theme dir path.
 		$theme_dir  = $args_ready['theme_slug'];
-		if ( empty( $theme_dir ) ) {
-			$theme_dir = 'default';
-		}
 		if ( '' !== $path_to_theme_directory ) {
 			$dst = $path_to_theme_directory . '/' . $theme_dir;
 		} else {
 			$dst = 'wp-content/themes/' . $theme_dir;
 		}
 		$answer = '';
+		// If there are no '-s' silent argument - get a question to user.
 		if ( isset( $args_ready['silent'] ) && false === $args_ready['silent'] ) {
 			$question = 'You creating project "'
 			            . ucfirst( $theme_title )
@@ -45,11 +46,14 @@ class Boilerplates {
 			            . '" do you agree ? (yes/no)';
 			$answer = $event->getIO()->ask( $question );
 		}
+		// Replacement array.
+		$prefix = str_replace( '-', '_', $args_ready['theme_slug'] );
 		$replacement = array(
-			'_jmvt_name'  => $theme_title,
-			'_jmvt'       => $args_ready['theme_slug'],
+			'JustCoded Theme Boilerplate'  => $theme_title,
+			'_jmvt'       => $prefix,
 			'Boilerplate' => $name_space,
 		);
+		// Depending on user answer continue or stop working.
 		if ( 'yes' === strtolower( $answer ) || 'y' === strtolower( $answer ) || '' === $answer ) {
 			$src               = 'vendor/wordpress-theme-boilerplate';
 			if ( is_dir( $src ) ) {
@@ -61,6 +65,7 @@ class Boilerplates {
 			}
 			$event->getIO()->write( 'The task has been created!' );
 		} else {
+			// Stop the execution of the script if the user entered something other than 'yes' or 'y'.
 			exit();
 		}
 	}
