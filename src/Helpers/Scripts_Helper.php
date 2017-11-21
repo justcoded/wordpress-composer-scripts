@@ -57,7 +57,11 @@ class Scripts_Helper {
 	 * @param             $method
 	 */
 	public static function command_info( IOInterface $io, $method, $class_name ) {
-		// TODO: get doc comment from $method/class and print as command info
-	}
 
+		$reflection = new \ReflectionClass( $class_name );
+		$method     = $reflection->getMethod( $method );
+		$comment    = $method->getDocComment();
+
+		$io->write( $comment );
+	}
 }

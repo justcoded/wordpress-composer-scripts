@@ -37,7 +37,8 @@ class Boilerplates {
 		// Get arguments from composer command line.
 		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
 		if ( empty( $args[0] ) ) {
-			return Scripts_Helper::command_info( $io, __METHOD__, __CLASS__ );
+			$current_method = explode( '::', __METHOD__ );
+			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
 		}
 
 		// Prepare data.
