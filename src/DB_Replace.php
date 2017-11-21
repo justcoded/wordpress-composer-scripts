@@ -1,6 +1,6 @@
 <?php
 
-namespace Just_Coded\Word_Press\Composer;
+namespace JustCoded\WP\Composer;
 
 // TODO: create db replace command
 
