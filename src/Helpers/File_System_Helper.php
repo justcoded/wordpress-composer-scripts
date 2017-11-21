@@ -17,12 +17,13 @@ class File_System_Helper {
 		$dir = opendir( $src );
 		@mkdir( $dst );
 		while ( false !== ( $file = readdir( $dir ) ) ) {
-			if ( ( '.' !== $file ) && ( '..' !== $file ) ) {
-				if ( is_dir( $src . '/' . $file ) ) {
-					self::copy_dir( $src . '/' . $file, $dst . '/' . $file );
-				} else {
-					copy( $src . '/' . $file, $dst . '/' . $file );
-				}
+			if ( ( '.' === $file ) || ( '..' === $file ) ) {
+				continue;
+			}
+			if ( is_dir( $src . '/' . $file ) ) {
+				self::copy_dir( $src . '/' . $file, $dst . '/' . $file );
+			} else {
+				copy( $src . '/' . $file, $dst . '/' . $file );
 			}
 		}
 

@@ -22,7 +22,7 @@ class Scripts_Helper {
 	public static function parse_arguments( $arguments = array() ) {
 		$args_ready = array();
 		foreach ( $arguments as $key => $arg_str ) {
-			preg_match( '/(^-[^=? ?]*)(.)/', $arg_str, $matches );
+			preg_match( '/(^-[^=?\s?]*)(.)/', $arg_str, $matches );
 			if ( empty( $matches ) ) {
 				$args_ready[] = $arg_str;
 			} else {
@@ -36,9 +36,12 @@ class Scripts_Helper {
 		return $args_ready;
 	}
 
-	public static function command_info( IOInterface $io, $method ) {
+	/**
+	 * @param IOInterface $io
+	 * @param             $method
+	 */
+	public static function command_info( IOInterface $io, $method, $class_name ) {
 		// TODO: get doc comment from $method/class and print as command info
-		$io->write( 'There are was an error on: ' );
 	}
 
 }
