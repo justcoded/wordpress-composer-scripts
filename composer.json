@@ -29,7 +29,7 @@
 	},
   "autoload": {
     "psr-4": {
-      "JustCoded\\WordPress\\Composer\\": "src/"
+      "JustCoded\\WP\\Composer\\": "src/"
     }
   }
 }
