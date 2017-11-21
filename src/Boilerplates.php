@@ -4,6 +4,9 @@ namespace JustCoded\WP\Composer;
 
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
+use JustCoded\WP\Composer\Helpers\Array_Helper;
+use JustCoded\WP\Composer\Helpers\File_System_Helper;
+use JustCoded\WP\Composer\Helpers\Scripts_Helper;
 
 
 /**
@@ -20,53 +23,58 @@ class Boilerplates {
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
-		$io          = $event->getIO();
+		$io = $event->getIO();
 		// Get arguments from composer command line.
-		$arguments = $event->getArguments();
-		// Parse arguments.
-		$args_ready = CustomComposerHelper::arguments_cleaner( $arguments );
-		$theme_title = $args_ready['title'];
-		$name_space  = $args_ready['namespace'];
-		$name_space  = str_replace( ' ', '', ucfirst( $name_space ) );
-		$path_to_theme_directory = $args_ready['dir'];
-		// Get theme dir path.
-		$theme_dir  = $args_ready['theme_slug'];
-		if ( '' !== $path_to_theme_directory ) {
-			$dst = $path_to_theme_directory . '/' . $theme_dir;
-		} else {
-			$dst = 'wp-content/themes/' . $theme_dir;
+		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
+		$aa = __METHOD__;
+		if ( empty( $args[0] ) ) {
+			return Scripts_Helper::command_info( $io, __METHOD__ );
 		}
-		$answer = '';
+
+		// prepare data.
+		$theme       = $args[0];
+		$theme_title = Array_Helper::get_value( $args, 't', ucfirst( $theme ) );
+		$name_space  = Array_Helper::get_value( $args, 'ns', ucfirst( str_replace( $theme, '-', '_' ) ) );
+		$name_space  = str_replace( ' ', '', $name_space );
+		$dir         = Array_Helper::get_value( $args, 'dir', 'wp-content/themes' );
+		$slug        = str_replace( ' ', '', strtolower( $theme_title ) );
+		$dst = rtrim( $dir, '/' ) . '/' . $theme;
+
 		// If there are no '-s' silent argument - get a question to user.
-		if ( isset( $args_ready['silent'] ) && false === $args_ready['silent'] ) {
+		if ( empty( $args['s'] ) ) {
 			$question = 'You creating project "'
 			            . ucfirst( $theme_title )
 			            . '" on path "' . $dst
 			            . '" with namespace "' . $name_space
 			            . '" do you agree ? (yes/no)';
-			$answer = $event->getIO()->ask( $question );
+			$answer   = $event->getIO()->ask( $question );
+			if ( $answer && false === strpos( strtolower( $answer ), 'y' ) ) {
+				$io->write( 'Terminating' );
+
+				return;
+			}
 		}
 		// Replacement array.
-		$prefix = str_replace( '-', '_', $args_ready['theme_slug'] );
+		$prefix      = str_replace( '-', '_', $theme ) . '_';
 		$replacement = array(
-			'JustCoded Theme Boilerplate'  => $theme_title,
-			'_jmvt'       => $prefix,
-			'Boilerplate' => $name_space,
+			'JustCoded Theme Boilerplate' => $theme_title,
+			'boilerplate_'                => $prefix,
+			'Boilerplate\\'               => $name_space . '\\',
+			'_jmvt_name'                  => $theme_title,
+			'_jmvt'                       => $slug,
 		);
 		// Depending on user answer continue or stop working.
-		if ( 'yes' === strtolower( $answer ) || 'y' === strtolower( $answer ) || '' === $answer ) {
-			$src               = 'vendor/wordpress-theme-boilerplate';
-			if ( is_dir( $src ) ) {
-				$dir = opendir( $src );
-				CustomComposerHelper::recursive_copy( $src, $dst );
-				foreach ( $replacement as $str_to_find => $str_to_replace ) {
-					CustomComposerHelper::search_and_replace( $dst, $str_to_find, $str_to_replace );
-				}
-			}
-			$event->getIO()->write( 'The task has been created!' );
+		$full_path = dirname(__FILE__);
+		$full_path = str_replace( 'extensions/wordpress-composer-scripts/src', '', $full_path );
+		$src = $full_path . 'vendor/wordpress-theme-boilerplate';
+		$dst = $full_path . $dst;
+		if ( opendir( $src ) ) {
+			File_System_Helper::copy_dir( $src, $dst );
+			File_System_Helper::search_and_replace( $dst, $replacement );
 		} else {
-			// Stop the execution of the script if the user entered something other than 'yes' or 'y'.
-			exit();
+			$event->getIO()->write( 'There are was an error before start copying theme files' );
 		}
+		$event->getIO()->write( 'The task has been created!' );
+
 	}
 }
