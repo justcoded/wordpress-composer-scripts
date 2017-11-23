@@ -107,6 +107,8 @@ class Boilerplates {
 	 */
 	public static function secure( Event $event ) {
 		$io       = $event->getIO();
+		$server_path = getcwd();
+		$io->write( "\tYour server path is:    $server_path" );
 		$composer = $event->getComposer();
 		$path     = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
 		$args     = Scripts_Helper::parse_arguments( $event->getArguments() );
