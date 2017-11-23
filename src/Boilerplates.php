@@ -106,21 +106,22 @@ class Boilerplates {
 	 * @return bool
 	 */
 	public static function secure( Event $event ) {
-		$io       = $event->getIO();
-		$composer = $event->getComposer();
-		$path     = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
-		$args     = Scripts_Helper::parse_arguments( $event->getArguments() );
-		$user     = Array_Helper::get_value( $args, 'u', '' );
-		$pass     = Array_Helper::get_value( $args, 'p', '' );
-		// If parameters are wrong - show documentation.
-		if ( empty( $user ) || empty( $pass ) || 2 <= strlen( $user ) || 2 <= strlen( $pass ) ) {
-			$current_method = explode( '::', __METHOD__ );
-
-			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
-		}
+		$io        = $event->getIO();
+		$composer  = $event->getComposer();
+		$path      = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
+		$args      = Scripts_Helper::parse_arguments( $event->getArguments() );
+		$user      = Array_Helper::get_value( $args, 'u', '' );
+		$pass      = Array_Helper::get_value( $args, 'p', '' );
 		$root_path = Array_Helper::get_value( $args, 'r', '' );
 		if ( ! $root_path ) {
 			$root_path = $path;
+		}
+
+		// If parameters are wrong - show documentation.
+		if ( empty( $user ) || empty( $pass ) ) {
+			$current_method = explode( '::', __METHOD__ );
+
+			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
 		}
 
 		// comfirmation information.
