@@ -129,6 +129,12 @@ class Boilerplates {
 		$io->write( "\tPath:        $root_path" );
 		$io->write( "\tUser name:   $user" );
 		$io->write( "\tPassword:    $pass" );
+		$answer = $io->ask( 'Do you want to continue (yes/no)? ' );
+		if ( $answer && false === strpos( strtolower( $answer ), 'y' ) ) {
+			$io->write( 'Terminating.' );
+
+			return false;
+		}
 
 		$htacces_text = "
 		SetEnvIf Request_URI ^{sub_dir}cms/wp-admin/admin-ajax.php noauth=1
