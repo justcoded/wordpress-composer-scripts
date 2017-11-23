@@ -38,6 +38,7 @@ class Boilerplates {
 		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
 		if ( empty( $args[0] ) ) {
 			$current_method = explode( '::', __METHOD__ );
+
 			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
 		}
 
@@ -70,7 +71,7 @@ class Boilerplates {
 			'JustCoded Theme Boilerplate' => $theme_title,
 			'Boilerplate\\'               => $name_space . '\\',
 			'boilerplate_'                => $prefix,
-			"'boilerplate'"                => "'{$textdomain}'",
+			"'boilerplate'"               => "'{$textdomain}'",
 		);
 
 		// Run copy and replace.
