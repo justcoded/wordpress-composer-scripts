@@ -90,50 +90,41 @@ class Boilerplates {
 
 
 	/**
-	 * make base auth for wp-admin exclude admin-ajax.php
+	 * Make base auth for the wp-admin folder
 	 *
-	 * @param Event $event
+	 * Usage:
+	 *      wp:secure [-u="username"] [-p="password"]
 	 *
+	 * Options:
+	 *      -u          User name
+	 *      -p          Password
+	 *
+	 * @param Event $event Composer event.
+	 *
+	 * @return bool
 	 */
 	public static function secure( Event $event ) {
-
+		$io       = $event->getIO();
 		$composer = $event->getComposer();
-		$path = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
-		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
+		$path     = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
+		$args     = Scripts_Helper::parse_arguments( $event->getArguments() );
+		$user     = Array_Helper::get_value( $args, 'u', '' );
+		$pass     = Array_Helper::get_value( $args, 'p', '' );
+		// If parameters are wrong - show documentation.
+		if ( empty( $user ) || empty( $pass ) || 2 <= strlen( $user ) || 2 <= strlen( $pass ) ) {
+			$current_method = explode( '::', __METHOD__ );
 
-		$user      = Array_Helper::get_value( $args, 'u', '' );
-		$pass      = Array_Helper::get_value( $args, 'p', '' );
-		$root_path  = Array_Helper::get_value( $args, 'r', '' );
+			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
+		}
+		$root_path = Array_Helper::get_value( $args, 'r', '' );
 		if ( ! $root_path ) {
 			$root_path = $path;
-		}
-
-		if ( strlen( $user ) < 2 ) {
-			$event->getIO()->write(
-				'ERROR. Login should be at least 2 english letters or numbers. Quit initialization.'
-			);
-			exit( 0 );
-		}
-		if ( strlen( $pass ) < 2 ) {
-			$event->getIO()->write(
-				'ERROR. Password should be at least 2 english letters or numbers. Quit initialization.'
-			);
-			exit( 0 );
-		}
-
-		$welcome = $event->getIO()->ask(
-			'Enter Http Authentification intro message (default: Restricted Area)'
-		);
-		if ( $welcome ) {
-			$welcome = ( trim( $welcome ) ? trim( $welcome ) : 'Restricted Area' );
-		} else {
-			$welcome = 'Welcome';
 		}
 
 		$htacces_text = "
 		SetEnvIf Request_URI ^{sub_dir}cms/wp-admin/admin-ajax.php noauth=1
 		Authtype Basic
-		AuthName \"{welcome}\"
+		AuthName \"Restricted Access\"
 		AuthUserFile {htpassdir}/cms/.htpasswd
 		Require valid-user
 		Order Deny,Allow
@@ -146,7 +137,6 @@ class Boilerplates {
 		$subdir       = ( $m[1] ) ? $m[1] : '/';
 		$htacces_text = strtr( $htacces_text, array(
 			'{sub_dir}'   => $subdir,
-			'{welcome}'   => $welcome,
 			'{htpassdir}' => $root_path,
 		) );
 		if ( ! is_dir( $path . '/cms/wp-admin' ) ) {

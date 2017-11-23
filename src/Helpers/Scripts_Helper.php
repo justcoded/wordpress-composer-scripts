@@ -61,6 +61,8 @@ class Scripts_Helper {
 		$reflection = new \ReflectionClass( $class_name );
 		$method     = $reflection->getMethod( $method );
 		$comment    = $method->getDocComment();
+		$comment = str_replace( array( '/**', '*/' ), '', $comment );
+		$comment = str_replace( '*', '', $comment );
 
 		$io->write( $comment );
 	}
