@@ -103,9 +103,9 @@ class Boilerplates {
 
 		$user      = Array_Helper::get_value( $args, 'u', '' );
 		$pass      = Array_Helper::get_value( $args, 'p', '' );
-		$root_path = Array_Helper::get_value( $args, 'r', '' );
-		if ( false == empty( $root_path ) ) {
-			$path = $root_path;
+		$root_path  = Array_Helper::get_value( $args, 'r', '' );
+		if ( ! $root_path ) {
+			$root_path = $path;
 		}
 
 		if ( strlen( $user ) < 2 ) {
@@ -147,7 +147,7 @@ class Boilerplates {
 		$htacces_text = strtr( $htacces_text, array(
 			'{sub_dir}'   => $subdir,
 			'{welcome}'   => $welcome,
-			'{htpassdir}' => $path,
+			'{htpassdir}' => $root_path,
 		) );
 		if ( ! is_dir( $path . '/cms/wp-admin' ) ) {
 			mkdir( $path . '/cms/wp-admin', 0755, true );
