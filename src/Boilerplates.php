@@ -96,8 +96,10 @@ class Boilerplates {
 	 *      wp:secure [-u="username"] [-p="password"]
 	 *
 	 * Options:
-	 *      -u          User name
-	 *      -p          Password
+	 *      -u          User name (Should be at least 2 sign)
+	 *      -p          Password (Should be at least 2 sign)
+	 *      -r          Full server path to the directory with the site
+	 *                  It looks like: /var/www/someserver/someuser/env100/web/sitename/
 	 *
 	 * @param Event $event Composer event.
 	 *
@@ -120,6 +122,12 @@ class Boilerplates {
 		if ( ! $root_path ) {
 			$root_path = $path;
 		}
+
+		// comfirmation information.
+		$io->write( 'You are about to create a secure file:' );
+		$io->write( "\tPath:        $root_path" );
+		$io->write( "\tUser name:   $user" );
+		$io->write( "\tPassword:    $pass" );
 
 		$htacces_text = "
 		SetEnvIf Request_URI ^{sub_dir}cms/wp-admin/admin-ajax.php noauth=1
