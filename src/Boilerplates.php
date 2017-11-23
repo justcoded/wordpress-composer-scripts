@@ -118,7 +118,7 @@ class Boilerplates {
 		}
 
 		// If parameters are wrong - show documentation.
-		if ( empty( $user ) || empty( $pass ) ) {
+		if ( count( $args ) < 2 ) {
 			$current_method = explode( '::', __METHOD__ );
 
 			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
