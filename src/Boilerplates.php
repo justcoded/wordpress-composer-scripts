@@ -100,8 +100,12 @@ class Boilerplates {
 		$path = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
 		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
 
-		$user = Array_Helper::get_value( $args, 'u', '' );
-		$pass  = Array_Helper::get_value( $args, 'p', '' );
+		$user      = Array_Helper::get_value( $args, 'u', '' );
+		$pass      = Array_Helper::get_value( $args, 'p', '' );
+		$root_path = Array_Helper::get_value( $args, 'r', '' );
+		if ( false == empty( $root_path ) ) {
+			$path = $root_path;
+		}
 
 		if ( strlen( $user ) < 2 ) {
 			$event->getIO()->write(
