@@ -38,6 +38,7 @@ class Boilerplates {
 		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
 		if ( empty( $args[0] ) ) {
 			$current_method = explode( '::', __METHOD__ );
+
 			return Scripts_Helper::command_info( $io, $current_method[1], __CLASS__ );
 		}
 
@@ -70,7 +71,7 @@ class Boilerplates {
 			'JustCoded Theme Boilerplate' => $theme_title,
 			'Boilerplate\\'               => $name_space . '\\',
 			'boilerplate_'                => $prefix,
-			"'boilerplate'"                => "'{$textdomain}'",
+			"'boilerplate'"               => "'{$textdomain}'",
 		);
 
 		// Run copy and replace.
@@ -87,70 +88,4 @@ class Boilerplates {
 		$event->getIO()->write( 'Theme has been created!' );
 	}
 
-
-	/**
-	 * make base auth for wp-admin exclude admin-ajax.php
-	 *
-	 * @param Event $event
-	 *
-	 */
-	public static function secure( Event $event ) {
-
-		$composer = $event->getComposer();
-		$path = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
-		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
-
-		$user = Array_Helper::get_value( $args, 'u', '' );
-		$pass  = Array_Helper::get_value( $args, 'p', '' );
-
-		if ( strlen( $user ) < 2 ) {
-			$event->getIO()->write(
-				'ERROR. Login should be at least 2 english letters or numbers. Quit initialization.'
-			);
-			exit( 0 );
-		}
-		if ( strlen( $pass ) < 2 ) {
-			$event->getIO()->write(
-				'ERROR. Password should be at least 2 english letters or numbers. Quit initialization.'
-			);
-			exit( 0 );
-		}
-
-		$welcome = $event->getIO()->ask(
-			'Enter Http Authentification intro message (default: Restricted Area)'
-		);
-		if ( $welcome ) {
-			$welcome = ( trim( $welcome ) ? trim( $welcome ) : 'Restricted Area' );
-		} else {
-			$welcome = 'Welcome';
-		}
-
-		$htacces_text = "
-		SetEnvIf Request_URI ^{sub_dir}cms/wp-admin/admin-ajax.php noauth=1
-		Authtype Basic
-		AuthName \"{welcome}\"
-		AuthUserFile {htpassdir}/cms/.htpasswd
-		Require valid-user
-		Order Deny,Allow
-		Deny from all
-		Allow from env=noauth
-		Satisfy any";
-
-		$base_htaccess = file_get_contents( $path . '/.htaccess' );
-		preg_match( "/RewriteBase\s(.*)/i", $base_htaccess, $m );
-		$subdir       = ( $m[1] ) ? $m[1] : '/';
-		$htacces_text = strtr( $htacces_text, array(
-			'{sub_dir}'   => $subdir,
-			'{welcome}'   => $welcome,
-			'{htpassdir}' => $path,
-		) );
-		if ( ! is_dir( $path . '/cms/wp-admin' ) ) {
-			mkdir( $path . '/cms/wp-admin', 0755, true );
-		}
-		file_put_contents( $path . '/cms/wp-admin/.htaccess', $htacces_text );
-		file_put_contents( $path . '/cms/.htpasswd', $user . ':' . crypt( $pass, base64_encode( $pass ) ) . "\n" );
-		$event->getIO()->write(
-			'htpassw was successfully generated.'
-		);
-	}
 }
