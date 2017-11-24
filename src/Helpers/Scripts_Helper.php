@@ -64,6 +64,13 @@ class Scripts_Helper {
 		$comment = str_replace( array( '/**', '*/' ), '', $comment );
 		$comment = str_replace( '*', '', $comment );
 
+		$comment     = explode( PHP_EOL, $comment );
+		foreach ( $comment as $line ) {
+			if ( false !== strpos( $line, '@param' ) || false !== strpos( $line, '@return' ) ) {
+				$comment = str_replace( $line, '', $comment );
+			}
+		}
+
 		$io->write( $comment );
 	}
 }
