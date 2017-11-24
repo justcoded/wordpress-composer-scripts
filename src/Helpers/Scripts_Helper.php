@@ -63,13 +63,13 @@ class Scripts_Helper {
 		$comment    = $method->getDocComment();
 		$comment = str_replace( array( '/**', '*/' ), '', $comment );
 		$comment = str_replace( '*', '', $comment );
-
 		$comment     = explode( PHP_EOL, $comment );
-		foreach ( $comment as $line ) {
+		foreach ( $comment as $key => $line ) {
 			if ( false !== strpos( $line, '@param' ) || false !== strpos( $line, '@return' ) ) {
-				$comment = str_replace( $line, '', $comment );
+				unset( $comment[ $key ] );
 			}
 		}
+		$comment = implode( PHP_EOL, $comment );
 
 		$io->write( $comment );
 	}
