@@ -34,30 +34,6 @@ class Environment {
 			copy( "$root_dir/.htaccess.example", "$root_dir/.htaccess" );
 			$io->write( "\t.htaccess file created." );
 		}
-
-		// change htaccess after setup theme.
-		$htaccess_content = file_get_contents( $root_dir . '/.htaccess' );
-		$env_content      = file_get_contents( $root_dir . '/.env' );
-		$site_url         = '';
-		$text_by_rows     = explode( PHP_EOL, $env_content );
-		foreach ( $text_by_rows as $line ) {
-			$one_line = explode( '=', $line );
-			if ( 'WP_HOME' == $one_line[0] ) {
-				$site_url = $one_line[1];
-			}
-		}
-		$get_subfolder = explode( '/', $site_url );
-
-		$subfolder_name = '';
-		if ( count( $get_subfolder ) > 2 ) {
-			$subfolder_name = $get_subfolder[3];
-		}
-		if ( $subfolder_name ) {
-			$htaccess_content = str_replace( 'RewriteBase /' . PHP_EOL, 'RewriteBase /'.$subfolder_name.PHP_EOL, $htaccess_content );
-			$htaccess_content = str_replace( '/cms/wp-admin/ [R=301,L]' . PHP_EOL, '/'.$subfolder_name.'/cms/wp-admin/ [R=301,L]'.PHP_EOL, $htaccess_content );
-			$htaccess_content = str_replace( '/index.php [L]' . PHP_EOL, '/'.$subfolder_name.'/index.php [L]'.PHP_EOL, $htaccess_content );
-			file_put_contents( $root_dir . '/.htaccess', $htaccess_content );
-		}
 	}
 
 	/**
