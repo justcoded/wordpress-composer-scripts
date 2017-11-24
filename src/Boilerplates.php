@@ -137,7 +137,7 @@ class Boilerplates {
 		}
 
 		$htacces_text = "
-		SetEnvIf Request_URI ^{sub_dir}cms/wp-admin/admin-ajax.php noauth=1
+		SetEnvIf Request_URI ^{sub_dir}/cms/wp-admin/admin-ajax.php noauth=1
 		Authtype Basic
 		AuthName \"Restricted Access\"
 		AuthUserFile {htpassdir}/cms/.htpasswd
