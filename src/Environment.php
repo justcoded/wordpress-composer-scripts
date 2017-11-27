@@ -34,6 +34,30 @@ class Environment {
 			copy( "$root_dir/.htaccess.example", "$root_dir/.htaccess" );
 			$io->write( "\t.htaccess file created." );
 		}
+		// special delay to be sure all info has been printed to bash.
+		sleep( 1 );
+	}
+
+	/**
+	 * Copy deployment instructions as main readme file
+	 * (on after create project)
+	 *
+	 * @param Event $event Composer script event object.
+	 */
+	public static function deployment_readme( Event $event ) {
+		$composer = $event->getComposer();
+		$root_dir = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
+
+		if ( is_file( "$root_dir/DEPLOYMENT.md" ) && is_file( "$root_dir/README.md" ) ) {
+			$readme = file_get_contents( "$root_dir/README.md" );
+			if ( false !== strpos( $readme, 'Project Template by JustCoded' ) ) {
+				unlink( "$root_dir/README.md" );
+				rename( "$root_dir/DEPLOYMENT.md", "$root_dir/README.md" );
+				$event->getIO()->write( "\tREADME.md file created with deployment instructions." );
+			}
+		}
+		// special delay to be sure all info has been printed to bash.
+		sleep( 1 );
 	}
 
 	/**
@@ -60,6 +84,8 @@ class Environment {
 				&& $io->write( "\t.env.example has been updated." );
 		static::update_file( $io, "$root_dir/.env", $replace, false )
 				&& $io->write( "\t.env has been updated." );
+		// special delay to be sure all info has been printed to bash.
+		sleep( 1 );
 	}
 
 	/**
@@ -95,6 +121,8 @@ class Environment {
 				&& $io->write( "\t.env.example has been updated." );
 		static::update_file( $io, "$root_dir/.env", $replace, false )
 				&& $io->write( "\t.env has been updated." );
+		// special delay to be sure all info has been printed to bash.
+		sleep( 1 );
 	}
 
 	/**
@@ -128,7 +156,7 @@ class Environment {
 
 	/**
 	 * Generates a random password drawn from the defined set of characters.
-	 * (copy of wordpress function, wp_rand() replaced with random_int())
+	 * (copy of WordPress function, wp_rand() replaced with random_int())
 	 *
 	 * @param int  $length              Optional. The length of password to generate. Default 12.
 	 * @param bool $special_chars       Optional. Whether to include standard special characters.

@@ -29,7 +29,6 @@ class Boilerplates {
 	 *      -s          Silent install, setup theme without confirmation message
 	 *
 	 * @param Event $event Composer event.
-	 *
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
@@ -37,7 +36,7 @@ class Boilerplates {
 		// Get arguments from composer command line.
 		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
 		if ( empty( $args[0] ) ) {
-			return Scripts_Helper::command_info( $io, __METHOD__, __CLASS__ );
+			return Scripts_Helper::command_info( $io, __METHOD__ );
 		}
 
 		// Prepare data.
@@ -54,14 +53,10 @@ class Boilerplates {
 		$io->write( "\tTitle:       $theme_title" );
 		$io->write( "\tNamespace:   $name_space\\Theme\\*" );
 
-		if ( empty( $args['s'] ) ) {
-			$answer = $io->ask( 'Do you want to continue (yes/no)? ' );
-			if ( $answer && false === strpos( strtolower( $answer ), 'y' ) ) {
-				$io->write( 'Terminating.' );
-
-				return false;
-			}
+		if ( empty( $args['s'] ) && ! Scripts_Helper::confirm( $io ) ) {
+			return false;
 		}
+
 		// Replacement array.
 		$textdomain  = str_replace( '-', '_', $theme );
 		$prefix      = str_replace( '-', '_', $theme ) . '_';
@@ -69,7 +64,7 @@ class Boilerplates {
 			'JustCoded Theme Boilerplate' => $theme_title,
 			'Boilerplate\\'               => $name_space . '\\',
 			'boilerplate_'                => $prefix,
-			"'boilerplate'"                => "'{$textdomain}'",
+			"'boilerplate'"               => "'{$textdomain}'",
 		);
 
 		// Run copy and replace.
@@ -81,8 +76,8 @@ class Boilerplates {
 			File_System_Helper::copy_dir( $src, $dst );
 			File_System_Helper::search_and_replace( $dst, $replacement );
 		} else {
-			$event->getIO()->write( 'There are was an error before start copying theme files' );
+			$io->write( 'There are was an error before start copying theme files' );
 		}
-		$event->getIO()->write( 'Theme has been created!' );
+		$io->write( 'Theme has been created!' );
 	}
 }
