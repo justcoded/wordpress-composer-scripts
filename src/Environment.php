@@ -37,6 +37,26 @@ class Environment {
 	}
 
 	/**
+	 * Copy deployment instructions as main readme file
+	 * (on after create project)
+	 *
+	 * @param Event $event Composer script event object.
+	 */
+	public static function deployment_readme( Event $event ) {
+		$composer = $event->getComposer();
+		$root_dir = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
+
+		if ( is_file( "$root_dir/DEPLOYMENT.md" ) && is_file( "$root_dir/README.md" ) ) {
+			$readme = file_get_contents( "$root_dir/README.md" );
+			if ( false !== strpos( $readme, 'Project Template by JustCoded' ) ) {
+				unlink( "$root_dir/README.md" );
+				rename( "$root_dir/DEPLOYMENT.md", "$root_dir/README.md" );
+				$event->getIO()->write( 'README.md file created with deployment instructions.' );
+			}
+		}
+	}
+
+	/**
 	 * Generate new secure DB prefix environment variable
 	 *
 	 * @param Event $event Composer script event object.
