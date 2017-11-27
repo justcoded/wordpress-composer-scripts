@@ -128,7 +128,7 @@ class Environment {
 
 	/**
 	 * Generates a random password drawn from the defined set of characters.
-	 * (copy of wordpress function, wp_rand() replaced with random_int())
+	 * (copy of WordPress function, wp_rand() replaced with random_int())
 	 *
 	 * @param int  $length              Optional. The length of password to generate. Default 12.
 	 * @param bool $special_chars       Optional. Whether to include standard special characters.
@@ -157,45 +157,6 @@ class Environment {
 		}
 
 		return $password;
-	}
-
-	/**
-	 * Update htaccess file, if site is in subfolder
-	 *
-	 * @param Event $event Composer script event object.
-	 */
-	public static function htaccess_update( Event $event ) {
-
-		$composer = $event->getComposer();
-		$root_dir = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
-		$io       = $event->getIO();
-		$htaccess_content = file_get_contents( $root_dir . '/.htaccess' );
-		$env_content      = file_get_contents( $root_dir . '/.env' );
-		$site_url         = '';
-		$text_by_rows     = explode( PHP_EOL, $env_content );
-		foreach ( $text_by_rows as $line ) {
-			$one_line = explode( '=', $line );
-			if ( 'WP_HOME' == $one_line[0] ) {
-				$site_url = $one_line[1];
-			}
-		}
-		$get_subfolder = explode( '/', $site_url );
-
-		$subfolder_name = '';
-		if ( count( $get_subfolder ) > 2 ) {
-			$subfolder_name = $get_subfolder[3];
-		}
-		if ( $subfolder_name ) {
-			$htaccess_content = str_replace( 'RewriteBase /' . PHP_EOL, 'RewriteBase /'.$subfolder_name.PHP_EOL, $htaccess_content );
-			$htaccess_content = str_replace( '/cms/wp-admin/ [R=301,L]' . PHP_EOL, '/'.$subfolder_name.'/cms/wp-admin/ [R=301,L]'.PHP_EOL, $htaccess_content );
-			$htaccess_content = str_replace( '/index.php [L]' . PHP_EOL, '/'.$subfolder_name.'/index.php [L]'.PHP_EOL, $htaccess_content );
-			if ( file_put_contents( $root_dir . '/.htaccess', $htaccess_content ) ) {
-				$io->write( 'htaccess file was successfully updated!' );
-			} else {
-				$io->write( 'htaccess file was not updated!' );
-			}
-		}
-
 	}
 
 }

@@ -15,7 +15,7 @@ class Scripts_Helper {
 	/**
 	 * Help to parse arguments to key/value
 	 *
-	 * @param array $arguments
+	 * @param array $arguments Composer arguments.
 	 *
 	 * @return array
 	 */
@@ -53,24 +53,50 @@ class Scripts_Helper {
 	}
 
 	/**
-	 * @param IOInterface $io
-	 * @param             $method
+	 * Print command info from method comment
+	 *
+	 * @param IOInterface $io  Composer IO object.
+	 * @param string      $method Full method name.
 	 */
-	public static function command_info( IOInterface $io, $method, $class_name ) {
+	public static function command_info( IOInterface $io, $method ) {
+		list( $class_name, $method_name ) = explode( '::', $method, 2 );
 
 		$reflection = new \ReflectionClass( $class_name );
-		$method     = $reflection->getMethod( $method );
-		$comment    = $method->getDocComment();
-		$comment = str_replace( array( '/**', '*/' ), '', $comment );
-		$comment = str_replace( '*', '', $comment );
-		$comment     = explode( PHP_EOL, $comment );
-		foreach ( $comment as $key => $line ) {
-			if ( false !== strpos( $line, '@param' ) || false !== strpos( $line, '@return' ) ) {
-				unset( $comment[ $key ] );
-			}
-		}
-		$comment = implode( PHP_EOL, $comment );
 
+		$method  = $reflection->getMethod( $method_name );
+		$comment = $method->getDocComment();
+		$comment = substr( $comment, 3, - 2 );
+		$lines   = explode( PHP_EOL, $comment );
+		foreach ( $lines as $key => $line ) {
+			if ( preg_match( '/[^\*]*\*[\t\s]*\@/', $line ) ) {
+				unset( $lines[ $key ] );
+				continue;
+			}
+
+			$lines[ $key ] = preg_replace( '/[^\*]*\*\s?/', '', $line );
+		}
+
+		$comment = implode( PHP_EOL, $lines );
 		$io->write( $comment );
+	}
+
+	/**
+	 * Ask a confirmation to continue
+	 *
+	 * @param IOInterface $io  Composer IO object.
+	 * @param string      $question Question to ask.
+	 * @param string      $exit_message Exit message.
+	 *
+	 * @return bool
+	 */
+	public static function confirm( IOInterface $io, $question = 'Do you want to continue (yes/no)? ', $exit_message = 'Terminating.' ) {
+		$answer = $io->ask( $question );
+		if ( $answer && false === strpos( strtolower( $answer ), 'y' ) ) {
+			$io->write( $exit_message );
+
+			return false;
+		}
+
+		return true;
 	}
 }
