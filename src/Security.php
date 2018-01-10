@@ -14,7 +14,7 @@ class Security {
 	 * Add http authentication for the wp-admin folder
 	 *
 	 * Usage:
-	 *      wp:secure -u="username" -p="password" [-r="/real/server/path/to/site"] [-s]
+	 *      wp:secure -- -u="username" -p="password" [-r="/real/server/path/to/site"] [-s]
 	 *
 	 * Options:
 	 *      -u          User name (Should be at least 2 characters)

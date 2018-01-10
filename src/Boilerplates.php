@@ -20,7 +20,7 @@ class Boilerplates {
 	 * New theme generator based on Justcoded Theme Boilerplate (https://github.com/justcoded/wordpress-theme-boilerplate)
 	 *
 	 * Usage:
-	 *      wp:theme <folder-name> [-t="My Theme"] [-ns="ClientName"] [-dir="wp-content/themes"] [-s, silent install]
+	 *      wp:theme -- <folder-name> [-t="My Theme"] [-ns="ClientName"] [-dir="wp-content/themes"] [-s, silent install]
 	 *
 	 * Options:
 	 *      -t          Theme name, displayed in WordPress admin panel
