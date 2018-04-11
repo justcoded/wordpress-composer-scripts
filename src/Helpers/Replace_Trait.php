@@ -4,48 +4,6 @@ namespace JustCoded\WP\Composer\Helpers;
 
 trait Replace_Trait {
 
-	public function find_wp_abspath() {
-		if ( ! defined( 'WP_CONFIG_PATH' ) ) {
-			throw new Exception( 'find_wp_directory() : WP_CONFIG_PATH is not defined.' );
-		}
-		$wp_conf_dir = dirname( WP_CONFIG_PATH );
-		if ( is_file( "$wp_conf_dir/wp-settings.php" ) ) {
-			return "$wp_conf_dir/";
-		}
-		$entries = scandir( $wp_conf_dir );
-		foreach ( $entries as $entry ) {
-			if ( $entry == '.' || $entry == '..' || ! is_dir( "$wp_conf_dir/$entry" ) ) {
-				continue;
-			}
-			if ( is_file( "$wp_conf_dir/$entry/wp-settings.php" ) ) {
-				return "$wp_conf_dir/$entry/";
-			}
-		}
-
-		return false;
-	}
-
-	public function html_options( $options, $selected = null ) {
-		if ( ! is_array( $options ) || empty( $options ) ) {
-			return;
-		}
-		$html = '';
-		foreach ( $options as $value => $label ) {
-			$selected_attr = '';
-			if ( ( ! is_array( $selected ) && strcmp( $selected, $value ) == 0 )
-			     || ( is_array( $selected ) && in_array( $value, $selected ) ) ) {
-				$selected_attr = ' selected="selected"';
-			}
-			$html .= '<option value="' . html_encode( $value ) . '">' . html_encode( $label ) . '</option>' . "\n";
-		}
-
-		return $html;
-	}
-
-	public function html_encode( $value ) {
-		return htmlentities( $value, ENT_QUOTES, 'UTF-8' );
-	}
-
 	public function sql_add_slashes( $string = '' ) {
 		$string = str_replace( '\\', '\\\\', $string );
 
