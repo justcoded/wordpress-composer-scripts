@@ -9,7 +9,7 @@ use JustCoded\WP\Composer\Helpers\Scripts_Helper;
 use PHP_CodeSniffer\Tokenizers\PHP;
 
 /**
- * Replace urls in DB
+ * Replace srting in DB
  *
  * Usage:
  *      wp:dbUpdate -- --search='old string' --replace='new string' --method --tables
@@ -23,7 +23,7 @@ use PHP_CodeSniffer\Tokenizers\PHP;
  */
 class DB_Replace {
 
-	public static function host_replace( Event $event ) {
+	public static function db_replace( Event $event ) {
 		$args    = Scripts_Helper::parse_arguments( $event->getArguments() );
 		$options = self::checkOptions( $args );
 
