@@ -30,10 +30,9 @@ class DB_Replace {
 	 *
 	 */
 	public static function db_replace( Event $event ) {
-		$args    = Scripts_Helper::parse_arguments( $event->getArguments() );
-		$io      = $event->getIO();
+		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
+		$io   = $event->getIO();
 		$options = self::check_options( $args, $io );
-
 		$replace_param = self::prepare_options( $options );
 		self::update_tables( $replace_param );
 	}
@@ -112,6 +111,7 @@ class DB_Replace {
 		foreach ( $args as $key => $arg ) {
 			if ( ! in_array( $key, $list_options ) || empty( $key ) ) {
 				$io->writeError( 'Undefined parameter.' );
+				die;
 			}
 		}
 
@@ -120,9 +120,9 @@ class DB_Replace {
 		$params['method']        = Array_Helper::get_value( $args, 'method', 'simple' );
 		$params['tables_choice'] = Array_Helper::get_value( $args, 'tables', 'all' );
 
-
 		if ( empty( $params['search'] ) ) {
 			$io->writeError( 'Please specify string for replace' );
+			die;
 		}
 
 		return $params;
