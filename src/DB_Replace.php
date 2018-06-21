@@ -4,7 +4,6 @@ namespace JustCoded\WP\Composer;
 
 use Composer\Script\Event;
 use JustCoded\WP\Composer\Helpers\Array_Helper;
-use JustCoded\WP\Composer\Helpers\Process_Controller;
 use JustCoded\WP\Composer\Helpers\Scripts_Helper;
 use JustCoded\WP\Composer\Helpers\Replace_Trait;
 use PHP_CodeSniffer\Tokenizers\PHP;

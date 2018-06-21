@@ -4,13 +4,13 @@ namespace JustCoded\WP\Composer\Helpers;
 
 trait Replace_Trait {
 
-	public function sql_add_slashes( $string = '' ) {
+	public static function sql_add_slashes( $string = '' ) {
 		$string = str_replace( '\\', '\\\\', $string );
 
 		return str_replace( '\'', '\\\'', $string );
 	}
 
-	public function is_json( $string, $strict = false ) {
+	public static function is_json( $string, $strict = false ) {
 		$json = @json_decode( $string, true );
 		if ( $strict == true && ! is_array( $json ) ) {
 			return false;
