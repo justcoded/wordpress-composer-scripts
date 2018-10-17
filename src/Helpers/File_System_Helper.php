@@ -69,4 +69,25 @@ class File_System_Helper {
 		return $list_dir;
 	}
 
+	public static function get_folders_names( $dir ) {
+		if ( ! $handler = opendir( $dir ) ) {
+			return [];
+		}
+
+		$list_dir = [];
+
+		while ( ( $sub = readdir( $handler ) ) !== false ) {
+
+			$full_path = $dir . '/' . $sub;
+
+			if ( '.' === $sub || '..' === $sub || 'Thumb.db' === $sub || ! is_dir( $full_path ) ) {
+				continue;
+			}
+
+			$list_dir[] = $sub;
+		}
+
+		return $list_dir;
+	}
+
 }

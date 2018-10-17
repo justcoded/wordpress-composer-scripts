@@ -55,7 +55,7 @@ class Scripts_Helper {
 	/**
 	 * Print command info from method comment
 	 *
-	 * @param IOInterface $io  Composer IO object.
+	 * @param IOInterface $io Composer IO object.
 	 * @param string      $method Full method name.
 	 */
 	public static function command_info( IOInterface $io, $method ) {
@@ -83,7 +83,7 @@ class Scripts_Helper {
 	/**
 	 * Ask a confirmation to continue
 	 *
-	 * @param IOInterface $io  Composer IO object.
+	 * @param IOInterface $io Composer IO object.
 	 * @param string      $question Question to ask.
 	 * @param string      $exit_message Exit message.
 	 *
@@ -98,5 +98,35 @@ class Scripts_Helper {
 		}
 
 		return true;
+	}
+
+	public static function ask( IOInterface $io, $base_url, $theme_dir, $exit_message = 'No themes found!' ) {
+
+		if ( ! $io instanceof IOInterface ) {
+			return false;
+		}
+
+		$question = 'Please, choose theme you want to make a child from:' . PHP_EOL;
+
+
+		$src = $base_url . 'vendor/justcoded/wordpress-child-theme-boilerplate';
+		$dst = $base_url . $theme_dir;
+
+		if ( ! $themes = File_System_Helper::get_folders_names( $dst ) ) {
+			$io->write( $exit_message );
+			return false;
+		}
+
+		$last_key = 0;
+
+		foreach ( $themes as $key => $theme ) {
+			$question .= "[{$key}] --- {$theme}" . PHP_EOL;
+
+			$last_key = $key;
+		}
+
+		$question .= 'Wire a number from 0 to ' . $last_key . ': ';
+
+		return $themes[ (int) $io->ask( $question ) ];
 	}
 }

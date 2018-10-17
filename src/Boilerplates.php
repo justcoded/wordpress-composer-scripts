@@ -29,6 +29,7 @@ class Boilerplates {
 	 *      -s          Silent install, setup theme without confirmation message
 	 *
 	 * @param Event $event Composer event.
+	 *
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
@@ -72,6 +73,55 @@ class Boilerplates {
 		$root_dir = dirname( $composer->getConfig()->get( 'vendor-dir' ) );
 		$src      = $root_dir . '/vendor/justcoded/wordpress-theme-boilerplate';
 		$dst      = $root_dir . '/' . $dir;
+		if ( opendir( $src ) ) {
+			File_System_Helper::copy_dir( $src, $dst );
+			File_System_Helper::search_and_replace( $dst, $replacement );
+		} else {
+			$io->write( 'There are was an error before start copying theme files' );
+		}
+		$io->write( 'Theme has been created!' );
+	}
+
+	/**
+	 * New child theme generator based on selected theme (https://github.com/justcoded/wordpress-child-theme-boilerplate)
+	 *
+	 * Usage:
+	 *      wp:child-theme -- namespace [-dir="wp-content/themes"]
+	 *
+	 * Options:
+	 *      --            Namespace to be used for theme classes
+	 *      -dir        Themes base directory. Default to 'wp-content/themes'
+	 *
+	 * @param Event $event Composer event.
+	 *
+	 * @return bool
+	 */
+	public static function child_theme( Event $event ) {
+		$io = $event->getIO();
+
+		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
+		if ( empty( $args[0] ) ) {
+			return Scripts_Helper::command_info( $io, __METHOD__ );
+		}
+
+		$composer  = $event->getComposer();
+		$root_dir  = dirname( $composer->getConfig()->get( 'vendor-dir' ) ) . '/';
+		$theme_dir = Array_Helper::get_value( $args, 'dir', 'wp-content/themes' );
+
+		$theme            = Scripts_Helper::ask( $io, $root_dir, $theme_dir );
+		$dir              = trim( $theme_dir, '/' ) . '/' . $theme . '-' . 'child';
+		$child_theme_name = ucfirst( $theme );
+
+		$replacement = array(
+			'Default Child Theme Boilerplate' => $child_theme_name . ' Child',
+			'ChildBoilerplate\\'              => $args[0] . '\\',
+			'ChildBoilerplate'                => $args[0],
+			'parent-theme-name'               => $theme
+		);
+
+		$src = $root_dir . '/vendor/justcoded/wordpress-child-theme-boilerplate';
+		$dst = $root_dir . '/' . $dir;
+
 		if ( opendir( $src ) ) {
 			File_System_Helper::copy_dir( $src, $dst );
 			File_System_Helper::search_and_replace( $dst, $replacement );
