@@ -7,6 +7,7 @@ use Composer\Script\Event;
 use JustCoded\WP\Composer\Helpers\Array_Helper;
 use JustCoded\WP\Composer\Helpers\File_System_Helper;
 use JustCoded\WP\Composer\Helpers\Scripts_Helper;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 
 /**
@@ -29,6 +30,7 @@ class Boilerplates {
 	 *      -s          Silent install, setup theme without confirmation message
 	 *
 	 * @param Event $event Composer event.
+	 *
 	 * @return bool
 	 */
 	public static function theme( Event $event ) {
@@ -63,6 +65,7 @@ class Boilerplates {
 		$replacement = array(
 			'JustCoded Theme Boilerplate' => $theme_title,
 			'Boilerplate\\'               => $name_space . '\\',
+			'boilerplate_namespace'       => $name_space,
 			'boilerplate_'                => $prefix,
 			"'boilerplate'"               => "'{$textdomain}'",
 		);
@@ -79,5 +82,63 @@ class Boilerplates {
 			$io->write( 'There are was an error before start copying theme files' );
 		}
 		$io->write( 'Theme has been created!' );
+	}
+
+	/**
+	 * New child theme generator based on selected theme (https://github.com/justcoded/wordpress-child-theme-boilerplate)
+	 *
+	 * Usage:
+	 *      wp:child-theme -- directory
+	 *
+	 * Options:
+	 *      --            Directory of a parent theme. (Child theme will also be created here)
+	 *
+	 * @param Event $event Composer event.
+	 *
+	 * @return bool
+	 */
+	public static function child_theme( Event $event ) {
+		$io = $event->getIO();
+
+		$args = Scripts_Helper::parse_arguments( $event->getArguments() );
+		if ( empty( $args[0] ) ) {
+			return Scripts_Helper::command_info( $io, __METHOD__ );
+		}
+
+		$composer  = $event->getComposer();
+		$root_dir  = dirname( $composer->getConfig()->get( 'vendor-dir' ) ) . '/';
+		$theme_dir = $args[0];
+
+		$parent_theme     = Scripts_Helper::ask( $io, $root_dir, $theme_dir );
+		$parent_theme_dir = $root_dir . $theme_dir . '/' . $parent_theme;
+		$child_theme_dir  = trim( $theme_dir, '/' ) . '/' . $parent_theme . '-' . 'child';
+		$child_theme_name = ucfirst( $parent_theme );
+
+		try {
+			$parent_theme_namespace = File_System_Helper::find_theme_namespace( $parent_theme_dir );
+		} catch ( \Exception $exception ) {
+			$io->write( $exception->getMessage() );
+			die;
+		}
+
+
+		$replacement = array(
+			'Default Child Theme Boilerplate' => $child_theme_name . ' Child',
+			'ChildBoilerplate\\'              => $parent_theme_namespace . '\\',
+			'child_boilerplate_namespace'     => $parent_theme_namespace,
+			'ChildBoilerplate'                => $parent_theme_namespace,
+			'parent-theme-name'               => $parent_theme
+		);
+
+		$src = $root_dir . '/vendor/justcoded/wordpress-child-theme-boilerplate';
+		$dst = $root_dir . '/' . $child_theme_dir;
+
+		if ( opendir( $src ) ) {
+			File_System_Helper::copy_dir( $src, $dst );
+			File_System_Helper::search_and_replace( $dst, $replacement );
+		} else {
+			$io->write( 'There are was an error before start copying theme files' );
+		}
+		$io->write( 'Child theme has been created!' );
 	}
 }
