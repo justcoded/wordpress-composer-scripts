@@ -7,6 +7,7 @@ use Composer\Script\Event;
 use JustCoded\WP\Composer\Helpers\Array_Helper;
 use JustCoded\WP\Composer\Helpers\File_System_Helper;
 use JustCoded\WP\Composer\Helpers\Scripts_Helper;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 
 /**
@@ -64,6 +65,7 @@ class Boilerplates {
 		$replacement = array(
 			'JustCoded Theme Boilerplate' => $theme_title,
 			'Boilerplate\\'               => $name_space . '\\',
+			'boilerplate_namespace'       => $name_space,
 			'boilerplate_'                => $prefix,
 			"'boilerplate'"               => "'{$textdomain}'",
 		);
@@ -86,11 +88,10 @@ class Boilerplates {
 	 * New child theme generator based on selected theme (https://github.com/justcoded/wordpress-child-theme-boilerplate)
 	 *
 	 * Usage:
-	 *      wp:child-theme -- namespace [-dir="wp-content/themes"]
+	 *      wp:child-theme -- directory
 	 *
 	 * Options:
-	 *      --            Namespace to be used for theme classes
-	 *      -dir        Themes base directory. Default to 'wp-content/themes'
+	 *      --            Directory of a parent theme. (Child theme will also be created here)
 	 *
 	 * @param Event $event Composer event.
 	 *
@@ -106,21 +107,31 @@ class Boilerplates {
 
 		$composer  = $event->getComposer();
 		$root_dir  = dirname( $composer->getConfig()->get( 'vendor-dir' ) ) . '/';
-		$theme_dir = Array_Helper::get_value( $args, 'dir', 'wp-content/themes' );
+		$theme_dir = $args[0];
 
-		$theme            = Scripts_Helper::ask( $io, $root_dir, $theme_dir );
-		$dir              = trim( $theme_dir, '/' ) . '/' . $theme . '-' . 'child';
-		$child_theme_name = ucfirst( $theme );
+		$parent_theme     = Scripts_Helper::ask( $io, $root_dir, $theme_dir );
+		$parent_theme_dir = $root_dir . $theme_dir . '/' . $parent_theme;
+		$child_theme_dir  = trim( $theme_dir, '/' ) . '/' . $parent_theme . '-' . 'child';
+		$child_theme_name = ucfirst( $parent_theme );
+
+		try {
+			$parent_theme_namespace = File_System_Helper::find_theme_namespace( $parent_theme_dir );
+		} catch ( \Exception $exception ) {
+			$io->write( $exception->getMessage() );
+			die;
+		}
+
 
 		$replacement = array(
 			'Default Child Theme Boilerplate' => $child_theme_name . ' Child',
-			'ChildBoilerplate\\'              => $args[0] . '\\',
-			'ChildBoilerplate'                => $args[0],
-			'parent-theme-name'               => $theme
+			'ChildBoilerplate\\'              => $parent_theme_namespace . '\\',
+			'child_boilerplate_namespace'     => $parent_theme_namespace,
+			'ChildBoilerplate'                => $parent_theme_namespace,
+			'parent-theme-name'               => $parent_theme
 		);
 
 		$src = $root_dir . '/vendor/justcoded/wordpress-child-theme-boilerplate';
-		$dst = $root_dir . '/' . $dir;
+		$dst = $root_dir . '/' . $child_theme_dir;
 
 		if ( opendir( $src ) ) {
 			File_System_Helper::copy_dir( $src, $dst );
@@ -128,6 +139,6 @@ class Boilerplates {
 		} else {
 			$io->write( 'There are was an error before start copying theme files' );
 		}
-		$io->write( 'Theme has been created!' );
+		$io->write( 'Child theme has been created!' );
 	}
 }
